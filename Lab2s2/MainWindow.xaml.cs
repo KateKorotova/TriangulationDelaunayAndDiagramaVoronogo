@@ -144,42 +144,79 @@ namespace Lab2s2
         {
             numberPoints.Clear();
         }
-        //private Point searchNear()
-        //{
-        //    Point point = myListPoint[0];
-        //    double min = Double.MaxValue;
-        //    Point result = null; 
-        //    for(int i = 1; i < myListPoint.Count; i++)
-        //    {
-        //        Point temp = myListPoint[i];
-        //        double len = Math.Sqrt((point.X - temp.X)* (point.X - temp.X) + (point.Y - temp.Y)*(point.Y - temp.Y));
-        //        if (len < min)
-        //        {
-        //            min = len;
-        //            result = temp; 
-        //        }
-        //    }
-        //    return result;
-        //}
+
+        private bool isCrossIntersect(Point one, Point two, Point three, Point four)
+        {
+            double z1 = (three.X - one.X) * (two.Y - one.Y) - (three.Y - one.Y) * (two.X - one.X);
+            double z2 = (four.X - one.X) * (two.Y - one.Y) - (four.Y - one.Y) * (two.X - one.X);
+            if (z1 < 0 && z2 < 0 || z1 > 0 && z2 > 0 || z1 == 0 || z2 == 0)
+                return false;
+            double z3 = (one.X - three.X) * (four.Y - three.Y) - (one.Y - three.Y) * (four.X - three.X);
+            double z4 = (two.X - three.X) * (four.Y - three.Y) - (two.Y - three.Y) * (four.X - three.X);
+            if (z3 < 0 && z4 < 0 || z3 > 0 && z4 > 0 || z3 == 0 || z4 == 0)
+                return false;
+            return true;
+        }
+
+
 
         private List<Triangle> delone()
         {
             List<Triangle> result = new List<Triangle>();
+            for (int i = 0; i < myListPoint.Count - 2; i++)
+                for (int j = i + 1; j < myListPoint.Count; j++)
+                    for (int k = i + 1; k < myListPoint.Count; k++)
+                    {
+                        if (k == j)
+                            continue;
+                        Point one = myListPoint[i];
+                        Point two = myListPoint[j];
+                        Point three = myListPoint[k];
 
+                        double nx = (two.Y - one.Y) * (three.Normal - one.Normal) - (three.Y - one.Y) * (two.Normal - one.Normal);
+                        double ny = (three.X - one.X) * (two.Normal - one.Normal) - (two.X - one.X) * (three.Normal - one.Normal);
+                        double nz = (two.X - one.X) * (three.Y - one.Y) - (three.X - one.X) * (two.Y - one.Y);
+                        if (nz >= 0)
+                            continue;
+                        bool check = true; 
+                        for(int m = 0; m < myListPoint.Count; m++)
+                        {
+                            Point temp = myListPoint[m];
+                            double dot = (temp.X - one.X) * nx + (temp.Y - one.Y) * ny + (temp.Normal - one.Normal) * nz; 
+                            if(dot > 0)
+                            {
+                                check = false;
+                                break;
+                            }
+                        }
+                        if (check == false)
+                            continue;
+                        Point[] s1 = new Point[] { one, two, three, one};
+                        foreach(Triangle triangle in result)
+                        {
+                            Point[] s2 = new Point[] { triangle.One, triangle.Two, triangle.Three, triangle.One };
+                            for (int u = 0; u < 3; u++)
+                            {
+                                for (int v = 0; v < 3; v++)
+                                    if (isCrossIntersect(s1[u], s1[u + 1], s2[v], s2[v + 1]))
+                                    {
+                                        check = false;
+                                        break;
+                                    }
+                                if (check == false)
+                                    break;
+                            }
+                            if (check == false)
+                                  break;
+                        }
+                        if (check == false)
+                            continue;
+                        result.Add(new Triangle(one, two,three));
 
-
-
-
-
-
-
-
-
-
-
-
-
+                    }
             return result;
         }
     }
+
+    
 }
