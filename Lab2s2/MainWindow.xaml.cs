@@ -109,10 +109,11 @@ namespace Lab2s2
             Random random = new Random();
             int number;
             bool parser = Int32.TryParse(numberPoints.Text, out number);
-            if (parser) {
+            if (parser)
+            {
                 for (int iter = 0; iter < number; iter++)
                 {
-                    Point p = new Point(random.Next(0,Convert.ToInt32(canvas.ActualWidth)), random.Next(0, Convert.ToInt32(canvas.ActualHeight)), myListPoint.Count);
+                    Point p = new Point(random.Next(0, Convert.ToInt32(canvas.ActualWidth)), random.Next(0, Convert.ToInt32(canvas.ActualHeight)), myListPoint.Count);
                     p.Normal = norm(p);
                     myListPoint.Add(p);
                 }
@@ -159,8 +160,7 @@ namespace Lab2s2
         }
 
 
-
-        private List<Triangle> delone()
+        private List<Triangle> delaunaye()
         {
             List<Triangle> result = new List<Triangle>();
             for (int i = 0; i < myListPoint.Count - 2; i++)
@@ -178,12 +178,12 @@ namespace Lab2s2
                         double nz = (two.X - one.X) * (three.Y - one.Y) - (three.X - one.X) * (two.Y - one.Y);
                         if (nz >= 0)
                             continue;
-                        bool check = true; 
-                        for(int m = 0; m < myListPoint.Count; m++)
+                        bool check = true;
+                        for (int m = 0; m < myListPoint.Count; m++)
                         {
                             Point temp = myListPoint[m];
-                            double dot = (temp.X - one.X) * nx + (temp.Y - one.Y) * ny + (temp.Normal - one.Normal) * nz; 
-                            if(dot > 0)
+                            double dot = (temp.X - one.X) * nx + (temp.Y - one.Y) * ny + (temp.Normal - one.Normal) * nz;
+                            if (dot > 0)
                             {
                                 check = false;
                                 break;
@@ -191,8 +191,8 @@ namespace Lab2s2
                         }
                         if (check == false)
                             continue;
-                        Point[] s1 = new Point[] { one, two, three, one};
-                        foreach(Triangle triangle in result)
+                        Point[] s1 = new Point[] { one, two, three, one };
+                        foreach (Triangle triangle in result)
                         {
                             Point[] s2 = new Point[] { triangle.One, triangle.Two, triangle.Three, triangle.One };
                             for (int u = 0; u < 3; u++)
@@ -207,16 +207,45 @@ namespace Lab2s2
                                     break;
                             }
                             if (check == false)
-                                  break;
+                                break;
                         }
                         if (check == false)
                             continue;
-                        result.Add(new Triangle(one, two,three));
+                        result.Add(new Triangle(one, two, three));
 
                     }
             return result;
         }
-    }
 
-    
+        private void paintLine(Point one, Point two)
+        {
+            Line edge = new Line();
+            edge.X1 = one.X;
+            edge.Y1 = one.Y;
+            edge.X2 = two.X;
+            edge.Y2 = two.Y;
+
+            edge.Stroke = Brushes.Black;
+            edge.StrokeThickness = 1;
+            edge.HorizontalAlignment = HorizontalAlignment.Left;
+            edge.VerticalAlignment = VerticalAlignment.Center;
+            canvas.Children.Add(edge);
+        }
+
+        private void paintTriangl()
+        {
+            List<Triangle> triangles = delaunaye();
+            foreach(Triangle tr in triangles)
+            {
+                paintLine(tr.One, tr.Two);
+                paintLine(tr.Two, tr.Three);
+                paintLine(tr.Three, tr.One);
+            }
+        }
+
+        private void start_Click(object sender, RoutedEventArgs e)
+        {
+            paintTriangl();
+        }
+    }
 }

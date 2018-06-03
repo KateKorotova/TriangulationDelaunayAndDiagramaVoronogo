@@ -12,6 +12,7 @@
         <Button x:Name="generation" Content="Generation" HorizontalAlignment="Left" Margin="686,259,0,0" VerticalAlignment="Top" Width="75" Click="generation_Click"/>
         <TextBox x:Name="numberPoints" HorizontalAlignment="Left" Height="41" Margin="686,188,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="75" TextChanged="numberPoints_TextChanged" Initialized="numberPoints_Initialized" GotFocus="numberPoints_GotFocus"/>
         <Button x:Name="Clean" Content="Clear" HorizontalAlignment="Left" Margin="686,358,0,0" VerticalAlignment="Top" Width="75" Click="Clean_Click"/>
+        <Button x:Name="start" Content="Start" HorizontalAlignment="Left" Margin="686,139,0,0" VerticalAlignment="Top" Width="75" Click="start_Click"/>
 
     </Grid>
 </Window>
