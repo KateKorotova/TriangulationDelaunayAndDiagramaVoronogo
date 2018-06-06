@@ -22,6 +22,7 @@ namespace Lab2s2
     {
 
         List<Point> myListPoint = new List<Point>();
+        int choose = 1; 
 
         public MainWindow()
         {
@@ -87,6 +88,8 @@ namespace Lab2s2
 
         private void generation_Click(object sender, RoutedEventArgs e)
         {
+            canvas.Children.Clear();
+            myListPoint = new List<Point>();
             Random random = new Random();
             int number;
             bool parser = Int32.TryParse(numberPoints.Text, out number);
@@ -133,6 +136,18 @@ namespace Lab2s2
                 myListPoint.Add(point);
             }
             sr.Close();
+        }
+
+        private void writeToFIle(string fileName)
+        {
+            StreamWriter sw = File.CreateText(fileName);
+            sw.WriteLine(myListPoint.Count.ToString());
+            foreach(Point point in myListPoint)
+            {
+                string line = point.X.ToString() + " " + point.Y.ToString();
+                sw.WriteLine(line);
+            }
+            sw.Close();
         }
 
         private void paintPoint(Point p)
@@ -335,26 +350,29 @@ namespace Lab2s2
             List<Edge> centrePerp = new List<Edge>();
             foreach (Triangle trngl in triangles)
                 avrPerp.AddRange(edgesInTriangle(trngl));
-            for (int i = 0; i < triangles.Count - 1; i++)
-                for(int j = i + 1; j < triangles.Count; j++)
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                for (int j = i + 1; j < triangles.Count; j++)
                 {
-
-                    Point bl = blunt(triangles[i]);
-                    if (bl != null)
-                    {
-                        avrPerp.RemoveAll(item => compare(item.Two, triangles[i].Centre) == 0 && compare(item.One, bl) == 0);
-                        //avrPerp.Add(new Edge(new Point(2 * triangles[i].Centre.X - bl.X, 2 * triangles[i].Centre.Y - bl.Y),
-                        //                     triangles[i].Centre));
-
-                    }
                     Point commonPoint = avrPointInCommonEdge(triangles[i], triangles[j]);
-                    if(commonPoint != null)
+                    if (commonPoint != null)
                     {
                         centrePerp.Add(new Edge(triangles[i].Centre, triangles[j].Centre));
                         avrPerp.RemoveAll(item => compare(item.Two, triangles[i].Centre) == 0 && compare(item.One, commonPoint) == 0);
                         avrPerp.RemoveAll(item => compare(item.Two, triangles[j].Centre) == 0 && compare(item.One, commonPoint) == 0);
                     }
+
                 }
+
+                Point bl = blunt(triangles[i]);
+                if (bl != null)
+                {
+                    if(avrPerp.RemoveAll(item => compare(item.Two, triangles[i].Centre) == 0 && compare(item.One, bl) == 0) > 0)
+                        avrPerp.Add(new Edge(new Point(2 * triangles[i].Centre.X - bl.X, 2 * triangles[i].Centre.Y - bl.Y),
+                                            triangles[i].Centre));
+
+                }
+            }
             foreach(Edge edge in avrPerp)
             {
                 centrePerp.Add(new Edge(new Point(edge.Two.X + 100 * (edge.One.X - edge.Two.X), edge.Two.Y + 100 * (edge.One.Y - edge.Two.Y)), edge.Two));
@@ -368,89 +386,60 @@ namespace Lab2s2
             foreach (Edge edge in edges)
                 paintLine(edge.One, edge.Two, Brushes.Red);
         }
+        
 
         private void start_Click(object sender, RoutedEventArgs e)
         {
             canvas.Children.Clear();
             paintPoints();
-            //paintTriangl();
-            paintVoronogo(Voronogo(delaunaye()));
+            if (choose == 1)
+                paintTriangl();
+            else
+                paintVoronogo(Voronogo(delaunaye()));
 
         }
-
-        //private int nearestPoint(Point p)
-        //{
-        //    double min = Int32.MaxValue;
-        //    int nearest = 0;
-        //    for(int i = 0; i< myListPoint.Count; i++)
-        //    {
-        //        double len = (myListPoint[i].X - p.X)* (myListPoint[i].X - p.X) + (myListPoint[i].Y - p.Y) * (myListPoint[i].Y - p.Y);
-        //        if(min > len)
-        //        {
-        //            min = len;
-        //            nearest = myListPoint[i].Number;
-        //        }
-        //    }
-        //    return nearest;
-        //}
-
-
-
-        //private void paintVoronogoChit()
-        //{
-
-        //    Random rand = new Random();
-        //    SolidColorBrush[] colors = new SolidColorBrush[myListPoint.Count];
-        //    for(int i =0; i < colors.Length; i++)
-        //        colors[i] = new SolidColorBrush(Color.FromRgb((byte)rand.Next(0, 256), (byte)rand.Next(0, 256), (byte)rand.Next(0, 256)));
-        //    for (int i = 0; i< canvas.Width; i++)
-        //    {
-        //        for (int j = 0; j < canvas.Height; j++)
-        //        {
-        //            int temp = nearestPoint(new Point(i, j));
-        //            Ellipse point = new Ellipse();
-        //            point.Width = 1;
-        //            point.Height = 1;
-        //            point.Fill = colors[0];
-        //            Canvas.SetLeft(point, i);
-        //            Canvas.SetTop(point, j);
-
-        //            canvas.Children.Add(point);
-        //            //paintPoint(new Point(i, j));
-
-        //        }
-
-        //    }
-        //}
 
         private void save_Click(object sender, RoutedEventArgs e)
         {
-        //    Stream myStream = null;
-        //    SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
 
-        //    saveFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();
-        //    openFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-        //    openFileDialog1.FilterIndex = 2;
-        //    openFileDialog1.RestoreDirectory = true;
+            saveFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+            saveFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+            saveFileDialog.FilterIndex = 2;
+            saveFileDialog.RestoreDirectory = true;
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                        writeToFIle(saveFileDialog.FileName);
 
-        //    if (openFileDialog1.ShowDialog() == true)
-        //    {
-        //        try
-        //        {
-        //            if ((myStream = openFileDialog1.OpenFile()) != null)
-        //            {
-        //                readFromFile(openFileDialog1.FileName);
-        //                paintPoints();
-        //            }
-
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
-        //        }
-        //    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: Could not write to file. Original error: " + ex.Message);
+                }
+            }
         }
 
+        private void delaunayeChoose_Checked(object sender, RoutedEventArgs e)
+        {
+            if(choose == 2)
+            {
+                canvas.Children.Clear();
+                paintPoints();
+            }
+            choose = 1; 
+        }
+
+        private void voronogoChose_Checked(object sender, RoutedEventArgs e)
+        {
+            if (choose == 1)
+            {
+                canvas.Children.Clear();
+                paintPoints();
+            }
+            choose = 2;
+        }
     }
 }
 
